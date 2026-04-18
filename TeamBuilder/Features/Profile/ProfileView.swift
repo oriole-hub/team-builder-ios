@@ -12,7 +12,7 @@ struct ProfileView: View {
 
     var body: some View {
         ScrollView {
-            VStack(spacing: AppTheme.spacing16) {
+            VStack(alignment: .leading, spacing: AppTheme.spacing16) {
                 if let session = appModel.session {
                     identity(session: session)
                     if session.user.role == .employee, let dashboard = appModel.employeeDashboard {
@@ -34,14 +34,15 @@ struct ProfileView: View {
     private func identity(session: UserSession) -> some View {
         VStack(alignment: .leading, spacing: AppTheme.spacing8) {
             Text(session.user.fullName)
-                .font(.system(size: 24, weight: .bold))
+                .font(AppTheme.headerFont(24))
                 .foregroundStyle(AppTheme.textPrimary)
 
             Text(session.user.email)
+                .font(AppTheme.bodyFont())
                 .foregroundStyle(AppTheme.textSecondary)
 
             Text(session.user.role.rawValue)
-                .font(.system(size: 14, weight: .bold))
+                .font(AppTheme.headerFont(14))
                 .padding(.horizontal, AppTheme.spacing8)
                 .padding(.vertical, AppTheme.spacing4)
                 .background(AppTheme.accent.opacity(0.2), in: Capsule())
@@ -60,6 +61,7 @@ struct ProfileView: View {
                         .frame(width: 16, height: 16)
                         .foregroundStyle(AppTheme.textSecondary)
                     Text("Редактировать профиль")
+                        .font(AppTheme.bodyFont())
                         .foregroundStyle(AppTheme.textSecondary)
                 }
             }
@@ -72,7 +74,7 @@ struct ProfileView: View {
     private var deepLinkExamples: some View {
         VStack(alignment: .leading, spacing: AppTheme.spacing12) {
             Text("Deeplink-ссылки")
-                .font(.headline)
+                .font(AppTheme.headerFont(17))
                 .foregroundStyle(AppTheme.textPrimary)
 
             Button("Открыть уведомления") {

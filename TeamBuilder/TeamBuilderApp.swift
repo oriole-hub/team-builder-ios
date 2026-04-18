@@ -9,6 +9,10 @@ import SwiftUI
 
 @main
 struct TeamBuilderApp: App {
+    init() {
+        AppTheme.configureNavigationBarAppearance()
+    }
+
     var body: some Scene {
         WindowGroup {
             ContentView()

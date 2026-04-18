@@ -44,7 +44,7 @@ struct ProfileEditView: View {
     private func form(profile: EmployeeProfileData) -> some View {
         VStack(alignment: .leading, spacing: AppTheme.spacing12) {
             Text("Профиль сотрудника")
-                .font(.headline)
+                .font(AppTheme.headerFont(17))
                 .foregroundStyle(AppTheme.textPrimary)
 
             profileField(title: "Должность", text: $jobTitle)
@@ -69,6 +69,7 @@ struct ProfileEditView: View {
             .buttonStyle(.borderedProminent)
 
             Text("Стаж: \(profile.tenure) • Формат работы: \(profile.workMode)")
+                .font(AppTheme.bodyFont())
                 .foregroundStyle(AppTheme.textSecondary)
         }
         .appCard()
@@ -77,9 +78,11 @@ struct ProfileEditView: View {
     private func profileField(title: String, text: Binding<String>) -> some View {
         VStack(alignment: .leading, spacing: AppTheme.spacing8) {
             Text(title)
+                .font(AppTheme.bodyMediumFont())
                 .foregroundStyle(AppTheme.textSecondary)
 
             TextField(title, text: text, axis: .vertical)
+                .font(AppTheme.bodyFont())
                 .padding()
                 .background(AppTheme.elevatedSurface, in: RoundedRectangle(cornerRadius: AppTheme.radius12))
                 .foregroundStyle(AppTheme.textPrimary)

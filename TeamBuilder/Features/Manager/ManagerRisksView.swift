@@ -18,11 +18,11 @@ struct ManagerRisksView: View {
                         VStack(alignment: .leading, spacing: AppTheme.spacing8) {
                             HStack {
                                 Text(risk.title)
-                                    .font(.system(size: 16, weight: .semibold))
+                                    .font(AppTheme.headerFont(16))
                                     .foregroundStyle(AppTheme.textPrimary)
                                 Spacer()
                                 Text(risk.severity)
-                                    .font(.system(size: 12, weight: .bold))
+                                    .font(AppTheme.headerFont(12))
                                     .padding(.horizontal, AppTheme.spacing8)
                                     .padding(.vertical, AppTheme.spacing4)
                                     .background(color(for: risk.severity).opacity(0.2), in: Capsule())
@@ -30,6 +30,7 @@ struct ManagerRisksView: View {
                             }
 
                             Text(risk.message)
+                                .font(AppTheme.bodyFont())
                                 .foregroundStyle(AppTheme.textSecondary)
                         }
                         .appCard()

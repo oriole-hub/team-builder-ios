@@ -81,9 +81,11 @@ struct AssessmentsView: View {
         VStack(alignment: .leading, spacing: AppTheme.spacing8) {
             HStack {
                 Text(title)
+                    .font(AppTheme.bodyFont())
                     .foregroundStyle(AppTheme.textPrimary)
                 Spacer()
                 Text("\(Int(value.wrappedValue))")
+                    .font(AppTheme.bodyMediumFont())
                     .foregroundStyle(AppTheme.textSecondary)
             }
 

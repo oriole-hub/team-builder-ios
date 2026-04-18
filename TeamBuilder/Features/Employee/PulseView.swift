@@ -19,10 +19,10 @@ struct PulseView: View {
 
     var body: some View {
         ScrollView {
-            VStack(spacing: AppTheme.spacing16) {
+            VStack(alignment: .leading, spacing: AppTheme.spacing16) {
                 VStack(alignment: .leading, spacing: AppTheme.spacing12) {
                     Text("Еженедельный опрос")
-                        .font(.headline)
+                        .font(AppTheme.headerFont(17))
                         .foregroundStyle(AppTheme.textPrimary)
 
                     pulseSlider(title: "Настроение", value: $mood)
@@ -58,9 +58,11 @@ struct PulseView: View {
         VStack(alignment: .leading, spacing: AppTheme.spacing8) {
             HStack {
                 Text(title)
+                    .font(AppTheme.bodyFont())
                     .foregroundStyle(AppTheme.textPrimary)
                 Spacer()
                 Text("\(Int(value.wrappedValue))")
+                    .font(AppTheme.bodyMediumFont())
                     .foregroundStyle(AppTheme.textSecondary)
             }
 

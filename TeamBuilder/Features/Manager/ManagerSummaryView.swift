@@ -47,7 +47,7 @@ struct ManagerSummaryView: View {
     private func summaryCards(summary: TeamDashboardResponse) -> some View {
         VStack(alignment: .leading, spacing: AppTheme.spacing12) {
             Text(summary.teamName)
-                .font(.system(size: 28, weight: .bold))
+                .font(AppTheme.headerFont(28))
                 .foregroundStyle(AppTheme.textPrimary)
 
             LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: AppTheme.spacing12) {
@@ -63,16 +63,17 @@ struct ManagerSummaryView: View {
     private func recommendations(items: [RecommendationItem]) -> some View {
         VStack(alignment: .leading, spacing: AppTheme.spacing12) {
             Text("Рекомендуемые действия")
-                .font(.headline)
+                .font(AppTheme.headerFont(17))
                 .foregroundStyle(AppTheme.textPrimary)
 
             ForEach(items) { item in
                 VStack(alignment: .leading, spacing: AppTheme.spacing8) {
                     Text(item.title)
-                        .font(.system(size: 16, weight: .semibold))
+                        .font(AppTheme.headerFont(16))
                         .foregroundStyle(AppTheme.textPrimary)
 
                     Text(item.message)
+                        .font(AppTheme.bodyFont())
                         .foregroundStyle(AppTheme.textSecondary)
                 }
                 .appCard()
@@ -83,7 +84,7 @@ struct ManagerSummaryView: View {
     private func teamMovers(employees: [EmployeeSnapshot]) -> some View {
         VStack(alignment: .leading, spacing: AppTheme.spacing12) {
             Text("Кратко по людям")
-                .font(.headline)
+                .font(AppTheme.headerFont(17))
                 .foregroundStyle(AppTheme.textPrimary)
 
             ForEach(employees) { employee in
@@ -95,10 +96,10 @@ struct ManagerSummaryView: View {
     private func managerMetric(title: String, value: String) -> some View {
         VStack(alignment: .leading, spacing: AppTheme.spacing4) {
             Text(title)
-                .font(.system(size: 12, weight: .medium))
+                .font(AppTheme.bodyMediumFont(12))
                 .foregroundStyle(AppTheme.textSecondary)
             Text(value)
-                .font(.system(size: 24, weight: .bold))
+                .font(AppTheme.headerFont(24))
                 .foregroundStyle(AppTheme.textPrimary)
         }
         .frame(maxWidth: .infinity, alignment: .leading)

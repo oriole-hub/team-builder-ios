@@ -9,6 +9,10 @@ import SwiftUI
 import UIKit
 
 enum AppTheme {
+    static let halvarFontName = "HalvarBreitt2-XBd"
+    static let rooftopRegularFontName = "T2Rooftop-Regular"
+    static let rooftopMediumFontName = "T2Rooftop-Medium"
+
     static let background = dynamicColor(light: UIColor(red: 0.96, green: 0.97, blue: 0.99, alpha: 1.0),
                                          dark: UIColor(red: 0.05, green: 0.05, blue: 0.07, alpha: 1.0))
     static let surface = dynamicColor(light: UIColor(red: 1.0, green: 1.0, blue: 1.0, alpha: 1.0),
@@ -38,6 +42,39 @@ enum AppTheme {
 
     static let radius8: CGFloat = 8
     static let radius12: CGFloat = 12
+
+    static func headerFont(_ size: CGFloat) -> Font {
+        .custom(halvarFontName, size: size, relativeTo: size >= 24 ? .title : .headline)
+    }
+
+    static func bodyFont(_ size: CGFloat = 16) -> Font {
+        .custom(rooftopRegularFontName, size: size, relativeTo: size <= 12 ? .caption : .body)
+    }
+
+    static func bodyMediumFont(_ size: CGFloat = 16) -> Font {
+        .custom(rooftopMediumFontName, size: size, relativeTo: size <= 12 ? .caption : .body)
+    }
+
+    static func configureNavigationBarAppearance() {
+        let appearance = UINavigationBarAppearance()
+        appearance.configureWithTransparentBackground()
+        appearance.backgroundColor = UIColor.clear
+        appearance.titleTextAttributes = [
+            .foregroundColor: UIColor(textPrimary),
+            .font: UIFont(name: halvarFontName, size: 17) ?? UIFont.systemFont(ofSize: 17, weight: .bold)
+        ]
+        appearance.largeTitleTextAttributes = [
+            .foregroundColor: UIColor(textPrimary),
+            .font: UIFont(name: halvarFontName, size: 34) ?? UIFont.systemFont(ofSize: 34, weight: .bold)
+        ]
+
+        let navigationBar = UINavigationBar.appearance()
+        navigationBar.standardAppearance = appearance
+        navigationBar.scrollEdgeAppearance = appearance
+        navigationBar.compactAppearance = appearance
+        navigationBar.compactScrollEdgeAppearance = appearance
+        navigationBar.tintColor = UIColor(accent)
+    }
 
     private static func dynamicColor(light: UIColor, dark: UIColor) -> Color {
         Color(uiColor: UIColor { traitCollection in

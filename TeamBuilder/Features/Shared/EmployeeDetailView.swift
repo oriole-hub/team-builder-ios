@@ -17,10 +17,11 @@ struct EmployeeDetailView: View {
 
                 VStack(alignment: .leading, spacing: AppTheme.spacing12) {
                     Text("Рекомендация руководителю")
-                        .font(.headline)
+                        .font(AppTheme.headerFont(17))
                         .foregroundStyle(AppTheme.textPrimary)
 
                     Text(employee.topRecommendation)
+                        .font(AppTheme.bodyFont())
                         .foregroundStyle(AppTheme.textSecondary)
                 }
                 .appCard()

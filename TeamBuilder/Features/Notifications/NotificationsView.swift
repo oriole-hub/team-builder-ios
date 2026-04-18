@@ -23,7 +23,7 @@ struct NotificationsView: View {
                     VStack(alignment: .leading, spacing: AppTheme.spacing8) {
                         HStack {
                             Text(notification.title)
-                                .font(.system(size: 16, weight: .semibold))
+                                .font(AppTheme.headerFont(16))
                                 .foregroundStyle(AppTheme.textPrimary)
                             Spacer()
                             if !notification.isRead {
@@ -32,24 +32,14 @@ struct NotificationsView: View {
                                     .frame(width: 10, height: 10)
                             }
                         }
-                        
+
                         Text(notification.message)
+                            .font(AppTheme.bodyFont())
                             .foregroundStyle(AppTheme.textSecondary)
-                        
+
                         Text(notification.createdAt.formatted(date: .abbreviated, time: .shortened))
-                            .font(.footnote)
+                            .font(AppTheme.bodyFont(13))
                             .foregroundStyle(AppTheme.textSecondary)
-                        
-                        //                    HStack {
-                        //                        Button("Открыть") {
-                        //                            if let url = URL(string: notification.deepLink) {
-                        //                                Task {
-                        //                                    await appModel.handleURL(url)
-                        //                                }
-                        //                            }
-                        //                        }
-                        //                        .buttonStyle(.bordered)
-                        //                    }
                     }
                     .listRowBackground(AppTheme.surface)
                     .listRowSeparatorTint(AppTheme.border)

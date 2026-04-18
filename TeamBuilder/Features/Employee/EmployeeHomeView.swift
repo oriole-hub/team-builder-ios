@@ -37,11 +37,11 @@ struct EmployeeHomeView: View {
     private func hero(dashboard: EmployeeDashboardData) -> some View {
         VStack(alignment: .leading, spacing: AppTheme.spacing12) {
             Text(dashboard.profile.fullName)
-                .font(.system(size: 28, weight: .bold))
+                .font(AppTheme.headerFont(28))
                 .foregroundStyle(AppTheme.textPrimary)
 
             Text("\(dashboard.profile.jobTitle) • \(dashboard.profile.department)")
-                .font(.system(size: 16, weight: .medium))
+                .font(AppTheme.bodyMediumFont(16))
                 .foregroundStyle(AppTheme.textSecondary)
 
             HStack(spacing: AppTheme.spacing12) {
@@ -56,7 +56,7 @@ struct EmployeeHomeView: View {
     private func latestPulse(dashboard: EmployeeDashboardData) -> some View {
         VStack(alignment: .leading, spacing: AppTheme.spacing12) {
             Text("Последний опрос pulse")
-                .font(.headline)
+                .font(AppTheme.headerFont(17))
                 .foregroundStyle(AppTheme.textPrimary)
 
             HStack(spacing: AppTheme.spacing12) {
@@ -66,7 +66,7 @@ struct EmployeeHomeView: View {
             }
 
             Text("Отправлено \(dashboard.latestPulse.submittedAt.formatted(date: .abbreviated, time: .omitted))")
-                .font(.system(size: 14, weight: .medium))
+                .font(AppTheme.bodyMediumFont(14))
                 .foregroundStyle(AppTheme.textSecondary)
         }
         .appCard()
@@ -75,18 +75,18 @@ struct EmployeeHomeView: View {
     private func recommendations(dashboard: EmployeeDashboardData) -> some View {
         VStack(alignment: .leading, spacing: AppTheme.spacing12) {
             Text("Рекомендации")
-                .font(.headline)
+                .font(AppTheme.headerFont(17))
                 .foregroundStyle(AppTheme.textPrimary)
 
             ForEach(dashboard.recommendations) { item in
                 VStack(alignment: .leading, spacing: AppTheme.spacing8) {
                     HStack {
                         Text(item.title)
-                            .font(.system(size: 16, weight: .semibold))
+                            .font(AppTheme.headerFont(16))
                             .foregroundStyle(AppTheme.textPrimary)
                         Spacer()
                         Text(item.priority)
-                            .font(.system(size: 12, weight: .bold))
+                            .font(AppTheme.headerFont(12))
                             .padding(.horizontal, AppTheme.spacing8)
                             .padding(.vertical, AppTheme.spacing4)
                             .background(AppTheme.accent.opacity(0.2), in: Capsule())
@@ -94,7 +94,7 @@ struct EmployeeHomeView: View {
                     }
 
                     Text(item.message)
-                        .font(.system(size: 14, weight: .medium))
+                        .font(AppTheme.bodyMediumFont(14))
                         .foregroundStyle(AppTheme.textSecondary)
                 }
                 .appCard()
@@ -105,20 +105,20 @@ struct EmployeeHomeView: View {
     private func goals(dashboard: EmployeeDashboardData) -> some View {
         VStack(alignment: .leading, spacing: AppTheme.spacing12) {
             Text("Цели и развитие")
-                .font(.headline)
+                .font(AppTheme.headerFont(17))
                 .foregroundStyle(AppTheme.textPrimary)
 
             ForEach(dashboard.goals) { goal in
                 VStack(alignment: .leading, spacing: AppTheme.spacing8) {
                     Text(goal.title)
-                        .font(.system(size: 16, weight: .semibold))
+                        .font(AppTheme.headerFont(16))
                         .foregroundStyle(AppTheme.textPrimary)
 
                     ProgressView(value: goal.progress)
                         .tint(AppTheme.secondaryAccent)
 
                     Text(goal.dueLabel)
-                        .font(.system(size: 14, weight: .medium))
+                        .font(AppTheme.bodyMediumFont(14))
                         .foregroundStyle(AppTheme.textSecondary)
                 }
                 .appCard()
@@ -129,10 +129,10 @@ struct EmployeeHomeView: View {
     private func metric(title: String, value: String) -> some View {
         VStack(alignment: .leading, spacing: AppTheme.spacing4) {
             Text(title)
-                .font(.system(size: 12, weight: .medium))
+                .font(AppTheme.bodyMediumFont(12))
                 .foregroundStyle(AppTheme.textSecondary)
             Text(value)
-                .font(.system(size: 20, weight: .bold))
+                .font(AppTheme.headerFont(20))
                 .foregroundStyle(AppTheme.textPrimary)
         }
         .frame(maxWidth: .infinity, alignment: .leading)

@@ -13,10 +13,11 @@ struct EmployeeCardView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: AppTheme.spacing8) {
             Text(employee.fullName)
-                .font(.system(size: 16, weight: .semibold))
+                .font(AppTheme.headerFont(16))
                 .foregroundStyle(AppTheme.textPrimary)
 
             Text(employee.roleTitle)
+                .font(AppTheme.bodyFont())
                 .foregroundStyle(AppTheme.textSecondary)
 
             HStack(spacing: AppTheme.spacing12) {
@@ -26,7 +27,7 @@ struct EmployeeCardView: View {
             }
 
             Text(employee.topRecommendation)
-                .font(.system(size: 14, weight: .medium))
+                .font(AppTheme.bodyMediumFont(14))
                 .foregroundStyle(AppTheme.textSecondary)
         }
         .appCard()
@@ -35,10 +36,10 @@ struct EmployeeCardView: View {
     private func badge(title: String, value: Int, color: Color) -> some View {
         VStack(alignment: .leading, spacing: AppTheme.spacing4) {
             Text(title)
-                .font(.system(size: 12, weight: .medium))
+                .font(AppTheme.bodyMediumFont(12))
                 .foregroundStyle(AppTheme.textSecondary)
             Text("\(value)")
-                .font(.system(size: 18, weight: .bold))
+                .font(AppTheme.headerFont(18))
                 .foregroundStyle(color)
         }
         .frame(maxWidth: .infinity, alignment: .leading)

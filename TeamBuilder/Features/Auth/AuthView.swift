@@ -21,10 +21,11 @@ struct AuthView: View {
                 VStack(alignment: .leading, spacing: AppTheme.spacing24) {
                     VStack(alignment: .leading, spacing: AppTheme.spacing12) {
                         Text("Вход")
-                            .font(.headline)
+                            .font(AppTheme.headerFont(17))
                             .foregroundStyle(AppTheme.textPrimary)
 
                         TextField("Почта", text: $email)
+                            .font(AppTheme.bodyFont())
                             .textInputAutocapitalization(.never)
                             .keyboardType(.emailAddress)
                             .padding()
@@ -32,6 +33,7 @@ struct AuthView: View {
                             .foregroundStyle(AppTheme.textPrimary)
 
                         SecureField("Пароль", text: $password)
+                            .font(AppTheme.bodyFont())
                             .padding()
                             .background(AppTheme.surface, in: RoundedRectangle(cornerRadius: AppTheme.radius12))
                             .foregroundStyle(AppTheme.textPrimary)

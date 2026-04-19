@@ -16,12 +16,12 @@ enum UserRole: String, Codable, CaseIterable, Identifiable {
     var id: String { rawValue }
 }
 
-struct SessionTokens {
+struct SessionTokens: Hashable {
     let accessToken: String
     let refreshToken: String
 }
 
-struct UserSession {
+struct UserSession: Hashable {
     let user: AppUser
     let tokens: SessionTokens
 }
@@ -31,22 +31,8 @@ struct AppUser: Identifiable, Codable, Hashable {
     let fullName: String
     let email: String
     let role: UserRole
-    let companyID: UUID
+    let companyID: UUID?
     let teamID: UUID?
-}
-
-struct RecommendationItem: Identifiable, Codable, Hashable {
-    let id: UUID
-    let title: String
-    let message: String
-    let priority: String
-}
-
-struct GoalItem: Identifiable, Codable, Hashable {
-    let id: UUID
-    let title: String
-    let dueLabel: String
-    let progress: Double
 }
 
 struct DiscResult: Codable, Hashable {
@@ -95,11 +81,9 @@ struct EmployeeProfileData: Codable, Hashable {
 
 struct EmployeeDashboardData: Codable, Hashable {
     let profile: EmployeeProfileData
-    let disc: DiscResult
-    let motivation: MotivationResult
-    let latestPulse: PulseEntry
-    let recommendations: [RecommendationItem]
-    let goals: [GoalItem]
+    let disc: DiscResult?
+    let motivation: MotivationResult?
+    let latestPulse: PulseEntry?
 }
 
 struct TeamRiskItem: Identifiable, Codable, Hashable {
@@ -112,28 +96,27 @@ struct TeamRiskItem: Identifiable, Codable, Hashable {
 struct TeamDashboardResponse: Codable, Hashable {
     let teamID: UUID
     let teamName: String
-    let chemistryScore: Int
-    let conflictRisk: Int
-    let attritionRisk: Int
-    let talentPoolScore: Int
-    let successionScore: Int
+    let chemistryScore: Int?
+    let conflictRisk: Int?
+    let attritionRisk: Int?
+    let talentPoolScore: Int?
+    let successionScore: Int?
 }
 
 struct EmployeeSnapshot: Identifiable, Codable, Hashable {
     let id: UUID
     let fullName: String
     let roleTitle: String
-    let chemistryFit: Int
-    let burnoutRisk: Int
-    let potential: Int
-    let topRecommendation: String
+    let chemistryFit: Int?
+    let burnoutRisk: Int?
+    let potential: Int?
+    let summary: String?
 }
 
 struct ManagerDashboardData: Codable, Hashable {
     let summary: TeamDashboardResponse
     let risks: [TeamRiskItem]
     let employees: [EmployeeSnapshot]
-    let recommendations: [RecommendationItem]
 }
 
 struct AppNotification: Identifiable, Codable, Hashable {
@@ -142,5 +125,5 @@ struct AppNotification: Identifiable, Codable, Hashable {
     let message: String
     let createdAt: Date
     var isRead: Bool
-    let deepLink: String
+    let deepLink: String?
 }

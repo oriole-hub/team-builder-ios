@@ -10,9 +10,22 @@
 		465787272F935A27002B4243 /* TeamBuilder.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TeamBuilder.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		465789082F94907D002B4243 /* Exceptions for "TeamBuilder" folder in "TeamBuilder" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 465787262F935A27002B4243 /* TeamBuilder */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		465787292F935A27002B4243 /* TeamBuilder */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				465789082F94907D002B4243 /* Exceptions for "TeamBuilder" folder in "TeamBuilder" target */,
+			);
 			path = TeamBuilder;
 			sourceTree = "<group>";
 		};
@@ -256,11 +269,8 @@
 				DEVELOPMENT_TEAM = 73AGDSA9QN;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_UIAppFonts = (
-					"Resources/Fonts/HalvarBreitt2-XBd.otf",
-					"Resources/Fonts/t2-Rooftop-Regular.otf",
-					"Resources/Fonts/t2-Rooftop-Medium.otf",
-				);
+				INFOPLIST_FILE = TeamBuilder/Info.plist;
+				INFOPLIST_KEY_UIAppFonts = "Resources/Fonts/HalvarBreitt2-XBd.otf Resources/Fonts/t2-Rooftop-Regular.otf Resources/Fonts/t2-Rooftop-Medium.otf";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -293,11 +303,8 @@
 				DEVELOPMENT_TEAM = 73AGDSA9QN;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_UIAppFonts = (
-					"Resources/Fonts/HalvarBreitt2-XBd.otf",
-					"Resources/Fonts/t2-Rooftop-Regular.otf",
-					"Resources/Fonts/t2-Rooftop-Medium.otf",
-				);
+				INFOPLIST_FILE = TeamBuilder/Info.plist;
+				INFOPLIST_KEY_UIAppFonts = "Resources/Fonts/HalvarBreitt2-XBd.otf Resources/Fonts/t2-Rooftop-Regular.otf Resources/Fonts/t2-Rooftop-Medium.otf";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;

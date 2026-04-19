@@ -16,19 +16,29 @@ struct EmployeeCardView: View {
                 .font(AppTheme.headerFont(16))
                 .foregroundStyle(AppTheme.textPrimary)
 
-            Text(employee.roleTitle)
-                .font(AppTheme.bodyFont())
-                .foregroundStyle(AppTheme.textSecondary)
-
-            HStack(spacing: AppTheme.spacing12) {
-                badge(title: "Совпадение", value: employee.chemistryFit, color: AppTheme.success)
-                badge(title: "Выгорание", value: employee.burnoutRisk, color: AppTheme.danger)
-                badge(title: "Потенциал", value: employee.potential, color: AppTheme.secondaryAccent)
+            if !employee.roleTitle.isEmpty {
+                Text(employee.roleTitle)
+                    .font(AppTheme.bodyFont())
+                    .foregroundStyle(AppTheme.textSecondary)
             }
 
-            Text(employee.topRecommendation)
-                .font(AppTheme.bodyMediumFont(14))
-                .foregroundStyle(AppTheme.textSecondary)
+            HStack(spacing: AppTheme.spacing12) {
+                if let chemistryFit = employee.chemistryFit {
+                    badge(title: "Совпадение", value: chemistryFit, color: AppTheme.success)
+                }
+                if let burnoutRisk = employee.burnoutRisk {
+                    badge(title: "Выгорание", value: burnoutRisk, color: AppTheme.danger)
+                }
+                if let potential = employee.potential {
+                    badge(title: "Потенциал", value: potential, color: AppTheme.secondaryAccent)
+                }
+            }
+
+            if let summary = employee.summary, !summary.isEmpty {
+                Text(summary)
+                    .font(AppTheme.bodyMediumFont(14))
+                    .foregroundStyle(AppTheme.textSecondary)
+            }
         }
         .appCard()
     }
@@ -58,7 +68,7 @@ struct EmployeeCardView_Previews: PreviewProvider {
                 chemistryFit: 84,
                 burnoutRisk: 41,
                 potential: 79,
-                topRecommendation: "Дайте больше признания и самостоятельности."
+                summary: "Дайте больше признания и самостоятельности."
             )
         )
     }

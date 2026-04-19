@@ -15,9 +15,13 @@ struct EmployeeHomeView: View {
             VStack(alignment: .leading, spacing: AppTheme.spacing16) {
                 if let dashboard = appModel.employeeDashboard {
                     hero(dashboard: dashboard)
-                    latestPulse(dashboard: dashboard)
-                    recommendations(dashboard: dashboard)
-                    goals(dashboard: dashboard)
+                    if dashboard.latestPulse != nil {
+                        latestPulse(dashboard: dashboard)
+                    }
+                    if dashboard.disc != nil || dashboard.motivation != nil {
+                        assessments(dashboard: dashboard)
+                    }
+                    profileHighlights(dashboard: dashboard)
                 } else {
                     ProgressView()
                         .frame(maxWidth: .infinity, minHeight: 240)
@@ -45,9 +49,15 @@ struct EmployeeHomeView: View {
                 .foregroundStyle(AppTheme.textSecondary)
 
             HStack(spacing: AppTheme.spacing12) {
-                metric(title: "DISC", value: dashboard.disc.dominantStyle)
-                metric(title: "Рост", value: "\(dashboard.motivation.growth)")
-                metric(title: "Риск ухода", value: "\(dashboard.latestPulse.leaveIntent)")
+                if let disc = dashboard.disc {
+                    metric(title: "DISC", value: disc.dominantStyle)
+                }
+                if let motivation = dashboard.motivation {
+                    metric(title: "Рост", value: "\(motivation.growth)")
+                }
+                if let pulse = dashboard.latestPulse {
+                    metric(title: "Риск ухода", value: "\(pulse.leaveIntent)")
+                }
             }
         }
         .appCard()
@@ -60,40 +70,42 @@ struct EmployeeHomeView: View {
                 .foregroundStyle(AppTheme.textPrimary)
 
             HStack(spacing: AppTheme.spacing12) {
-                metric(title: "Настроение", value: "\(dashboard.latestPulse.mood)")
-                metric(title: "Стресс", value: "\(dashboard.latestPulse.stress)")
-                metric(title: "Признание", value: "\(dashboard.latestPulse.recognition)")
+                metric(title: "Настроение", value: "\(dashboard.latestPulse?.mood ?? 0)")
+                metric(title: "Стресс", value: "\(dashboard.latestPulse?.stress ?? 0)")
+                metric(title: "Признание", value: "\(dashboard.latestPulse?.recognition ?? 0)")
             }
 
-            Text("Отправлено \(dashboard.latestPulse.submittedAt.formatted(date: .abbreviated, time: .omitted))")
+            Text("Отправлено \(dashboard.latestPulse?.submittedAt.formatted(date: .abbreviated, time: .omitted) ?? "недоступно")")
                 .font(AppTheme.bodyMediumFont(14))
                 .foregroundStyle(AppTheme.textSecondary)
         }
         .appCard()
     }
 
-    private func recommendations(dashboard: EmployeeDashboardData) -> some View {
+    private func assessments(dashboard: EmployeeDashboardData) -> some View {
         VStack(alignment: .leading, spacing: AppTheme.spacing12) {
-            Text("Рекомендации")
+            Text("Последние оценки")
                 .font(AppTheme.headerFont(17))
                 .foregroundStyle(AppTheme.textPrimary)
 
-            ForEach(dashboard.recommendations) { item in
+            if let disc = dashboard.disc {
                 VStack(alignment: .leading, spacing: AppTheme.spacing8) {
-                    HStack {
-                        Text(item.title)
-                            .font(AppTheme.headerFont(16))
-                            .foregroundStyle(AppTheme.textPrimary)
-                        Spacer()
-                        Text(item.priority)
-                            .font(AppTheme.headerFont(12))
-                            .padding(.horizontal, AppTheme.spacing8)
-                            .padding(.vertical, AppTheme.spacing4)
-                            .background(AppTheme.accent.opacity(0.2), in: Capsule())
-                            .foregroundStyle(AppTheme.accent)
-                    }
+                    Text("DISC")
+                        .font(AppTheme.headerFont(16))
+                        .foregroundStyle(AppTheme.textPrimary)
+                    Text("Доминирующий стиль: \(disc.dominantStyle)")
+                        .font(AppTheme.bodyMediumFont(14))
+                        .foregroundStyle(AppTheme.textSecondary)
+                }
+                .appCard()
+            }
 
-                    Text(item.message)
+            if let motivation = dashboard.motivation {
+                VStack(alignment: .leading, spacing: AppTheme.spacing8) {
+                    Text("Мотивация")
+                        .font(AppTheme.headerFont(16))
+                        .foregroundStyle(AppTheme.textPrimary)
+                    Text("Рост \(motivation.growth) • Автономия \(motivation.autonomy) • Стабильность \(motivation.stability) • Вознаграждение \(motivation.reward)")
                         .font(AppTheme.bodyMediumFont(14))
                         .foregroundStyle(AppTheme.textSecondary)
                 }
@@ -102,28 +114,25 @@ struct EmployeeHomeView: View {
         }
     }
 
-    private func goals(dashboard: EmployeeDashboardData) -> some View {
+    private func profileHighlights(dashboard: EmployeeDashboardData) -> some View {
         VStack(alignment: .leading, spacing: AppTheme.spacing12) {
-            Text("Цели и развитие")
+            Text("Профиль")
                 .font(AppTheme.headerFont(17))
                 .foregroundStyle(AppTheme.textPrimary)
 
-            ForEach(dashboard.goals) { goal in
-                VStack(alignment: .leading, spacing: AppTheme.spacing8) {
-                    Text(goal.title)
-                        .font(AppTheme.headerFont(16))
-                        .foregroundStyle(AppTheme.textPrimary)
-
-                    ProgressView(value: goal.progress)
-                        .tint(AppTheme.secondaryAccent)
-
-                    Text(goal.dueLabel)
-                        .font(AppTheme.bodyMediumFont(14))
-                        .foregroundStyle(AppTheme.textSecondary)
-                }
-                .appCard()
+            if !dashboard.profile.workStyle.isEmpty {
+                infoRow(title: "Стиль работы", value: dashboard.profile.workStyle)
             }
+
+            if !dashboard.profile.growthFocus.isEmpty {
+                infoRow(title: "Фокус развития", value: dashboard.profile.growthFocus)
+            }
+
+            Text("Стаж: \(dashboard.profile.tenure.isEmpty ? "не указан" : dashboard.profile.tenure) • Формат: \(dashboard.profile.workMode.isEmpty ? "не указан" : dashboard.profile.workMode)")
+                .font(AppTheme.bodyMediumFont(14))
+                .foregroundStyle(AppTheme.textSecondary)
         }
+        .appCard()
     }
 
     private func metric(title: String, value: String) -> some View {
@@ -138,6 +147,17 @@ struct EmployeeHomeView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(AppTheme.spacing12)
         .background(AppTheme.elevatedSurface, in: RoundedRectangle(cornerRadius: AppTheme.radius12))
+    }
+
+    private func infoRow(title: String, value: String) -> some View {
+        VStack(alignment: .leading, spacing: AppTheme.spacing4) {
+            Text(title)
+                .font(AppTheme.bodyMediumFont(12))
+                .foregroundStyle(AppTheme.textSecondary)
+            Text(value)
+                .font(AppTheme.bodyFont())
+                .foregroundStyle(AppTheme.textPrimary)
+        }
     }
 }
 

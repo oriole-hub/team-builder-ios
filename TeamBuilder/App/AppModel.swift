@@ -11,12 +11,14 @@ import SwiftUI
 
 @MainActor
 final class AppModel: ObservableObject {
+    private static let demoModeKey = "team_builder.demo_mode"
+
     @Published private(set) var session: UserSession?
     @Published private(set) var employeeDashboard: EmployeeDashboardData?
     @Published private(set) var managerDashboard: ManagerDashboardData?
     @Published private(set) var notifications: [AppNotification] = []
     @Published var selectedEmployeeTab: EmployeeTab = .home
-    @Published var selectedManagerTab: ManagerTab = .summary
+    @Published var selectedManagerTab: ManagerTab = .team
     @Published var isAlertPresented = false
     @Published var alertMessage = ""
     @Published var isLoading = false
@@ -24,7 +26,9 @@ final class AppModel: ObservableObject {
     @Published var presentedEmployee: EmployeeSnapshot?
     @Published var pendingInviteCode = ""
 
-    private let apiClient: any APIClient & NetworkStateControlling
+    private let primaryAPIClient: any APIClient & NetworkStateControlling
+    private let demoAPIClient = MockAPIClient()
+    private var apiClient: any APIClient & NetworkStateControlling
     private let keychainStore = KeychainStore()
     private let queueStore = OfflineQueueStore()
     private let defaults = UserDefaults.standard
@@ -33,8 +37,9 @@ final class AppModel: ObservableObject {
     private let accessTokenKey = "team_builder.access_token"
     private let refreshTokenKey = "team_builder.refresh_token"
 
-    init(apiClient: some APIClient & NetworkStateControlling) {
-        self.apiClient = apiClient
+    init(primaryAPIClient: some APIClient & NetworkStateControlling, startInDemoMode: Bool = false) {
+        self.primaryAPIClient = primaryAPIClient
+        self.apiClient = startInDemoMode ? demoAPIClient : primaryAPIClient
         self.session = Self.loadSession(
             defaults: defaults,
             keychainStore: keychainStore,
@@ -42,10 +47,17 @@ final class AppModel: ObservableObject {
             accessTokenKey: accessTokenKey,
             refreshTokenKey: refreshTokenKey
         )
+        configureAPIClient(apiClient)
     }
 
     convenience init() {
-        self.init(apiClient: MockAPIClient())
+        let isPreview = ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] == "1"
+        if isPreview {
+            self.init(primaryAPIClient: MockAPIClient(), startInDemoMode: true)
+        } else {
+            let startInDemoMode = UserDefaults.standard.bool(forKey: Self.demoModeKey)
+            self.init(primaryAPIClient: LiveAPIClient(), startInDemoMode: startInDemoMode)
+        }
     }
 
     var currentRole: UserRole {
@@ -83,19 +95,32 @@ final class AppModel: ObservableObject {
         defer { isLoading = false }
 
         do {
-            let response = try await apiClient.signIn(
+            let session = try await apiClient.signIn(
                 request: SignInRequest(email: normalizedEmail, password: normalizedPassword)
             )
-            guard let session = response.data?.toDomainSession() else {
-                presentAlert("Не удалось получить данные сессии.")
-                return
-            }
             setSession(session)
             await refreshData()
             await syncQueuedSubmissions()
         } catch {
             presentAlert(error.localizedDescription)
         }
+    }
+
+    func runDemoFlow(for role: UserRole) async {
+        switchAPIClient(to: demoAPIClient)
+        defaults.set(true, forKey: Self.demoModeKey)
+        selectedEmployeeTab = .home
+        selectedManagerTab = .team
+
+        let email: String
+        switch role {
+        case .manager:
+            email = "manager@demo.team"
+        default:
+            email = "employee@demo.team"
+        }
+
+        await signIn(email: email, password: "demo123")
     }
 
     func acceptInvitation(code: String, fullName: String) async {
@@ -111,14 +136,7 @@ final class AppModel: ObservableObject {
         defer { isLoading = false }
 
         do {
-            let response = try await apiClient.acceptInvitation(
-                code: normalizedCode,
-                fullName: normalizedName
-            )
-            guard let session = response.data?.toDomainSession() else {
-                presentAlert("Ответ по приглашению неполный.")
-                return
-            }
+            let session = try await apiClient.acceptInvitation(code: normalizedCode, fullName: normalizedName)
             setSession(session)
             pendingInviteCode = normalizedCode
             await refreshData()
@@ -133,11 +151,14 @@ final class AppModel: ObservableObject {
         managerDashboard = nil
         notifications = []
         selectedEmployeeTab = .home
-        selectedManagerTab = .summary
+        selectedManagerTab = .team
         presentedEmployee = nil
         defaults.removeObject(forKey: sessionKey)
+        defaults.removeObject(forKey: Self.demoModeKey)
         keychainStore.delete(accessTokenKey)
         keychainStore.delete(refreshTokenKey)
+        switchAPIClient(to: primaryAPIClient)
+        apiClient.authTokens = nil
     }
 
     func refreshData() async {
@@ -147,21 +168,18 @@ final class AppModel: ObservableObject {
         defer { isLoading = false }
 
         do {
-            let notificationsResponse = try await apiClient.fetchNotifications(userID: session.user.id)
-            notifications = notificationsResponse.data ?? []
+            notifications = try await apiClient.fetchNotifications()
 
             switch session.user.role {
             case .manager:
-                let response = try await apiClient.fetchManagerDashboard(userID: session.user.id)
-                managerDashboard = response.data
+                managerDashboard = try await loadManagerDashboard(for: session.user)
                 if let presentedEmployee {
-                    self.presentedEmployee = response.data?.employees.first(where: { $0.id == presentedEmployee.id })
+                    self.presentedEmployee = managerDashboard?.employees.first(where: { $0.id == presentedEmployee.id })
                 }
             case .employee:
-                let response = try await apiClient.fetchEmployeeDashboard(userID: session.user.id)
-                employeeDashboard = response.data
+                employeeDashboard = try await loadEmployeeDashboard(for: session.user)
             default:
-                break
+                employeeDashboard = try await loadEmployeeDashboard(for: session.user)
             }
         } catch {
             presentAlert(error.localizedDescription)
@@ -173,11 +191,12 @@ final class AppModel: ObservableObject {
 
         let request = DiscSubmissionRequest(
             employeeID: session.user.id,
-            dominance: Int(dominance),
-            influence: Int(influence),
-            steadiness: Int(steadiness),
-            compliance: Int(compliance),
-            submittedAt: Date()
+            answers: [
+                "dominance": .number(dominance.rounded()),
+                "influence": .number(influence.rounded()),
+                "steadiness": .number(steadiness.rounded()),
+                "compliance": .number(compliance.rounded())
+            ]
         )
 
         await submitWithRetry(kind: .disc, employeeID: session.user.id, discRequest: request, motivationRequest: nil, pulseRequest: nil) {
@@ -190,11 +209,12 @@ final class AppModel: ObservableObject {
 
         let request = MotivationSubmissionRequest(
             employeeID: session.user.id,
-            growth: Int(growth),
-            autonomy: Int(autonomy),
-            stability: Int(stability),
-            reward: Int(reward),
-            submittedAt: Date()
+            answers: [
+                "growth": .number(growth.rounded()),
+                "autonomy": .number(autonomy.rounded()),
+                "stability": .number(stability.rounded()),
+                "reward": .number(reward.rounded())
+            ]
         )
 
         await submitWithRetry(kind: .motivation, employeeID: session.user.id, discRequest: nil, motivationRequest: request, pulseRequest: nil) {
@@ -206,14 +226,12 @@ final class AppModel: ObservableObject {
         guard let session else { return }
 
         let request = PulseSubmissionRequest(
-            employeeID: session.user.id,
-            mood: Int(mood),
-            stress: Int(stress),
-            workload: Int(workload),
-            recognition: Int(recognition),
-            collaboration: Int(collaboration),
-            leaveIntent: Int(leaveIntent),
-            submittedAt: Date()
+            mood: Int(mood.rounded()),
+            stress: Int(stress.rounded()),
+            workload: Int(workload.rounded()),
+            recognition: Int(recognition.rounded()),
+            relationships: Int(collaboration.rounded()),
+            intentToLeave: Int(leaveIntent.rounded())
         )
 
         await submitWithRetry(kind: .pulse, employeeID: session.user.id, discRequest: nil, motivationRequest: nil, pulseRequest: request) {
@@ -225,10 +243,12 @@ final class AppModel: ObservableObject {
         guard let session else { return false }
 
         let request = EmployeeProfileUpdateRequest(
-            jobTitle: jobTitle,
-            department: department,
-            workStyle: workStyle,
-            growthFocus: growthFocus
+            profile: [
+                "job_title": .string(jobTitle),
+                "department": .string(department),
+                "work_style": .string(workStyle),
+                "growth_focus": .string(growthFocus)
+            ]
         )
 
         isLoading = true
@@ -246,7 +266,7 @@ final class AppModel: ObservableObject {
 
     func markNotificationRead(_ notification: AppNotification) async {
         do {
-            _ = try await apiClient.markNotificationRead(notificationID: notification.id)
+            try await apiClient.markNotificationRead(notificationID: notification.id)
             notifications = notifications.map { current in
                 guard current.id == notification.id else { return current }
                 var updated = current
@@ -316,8 +336,6 @@ final class AppModel: ObservableObject {
             } else {
                 selectedEmployeeTab = .notifications
             }
-        case .managerSummary:
-            selectedManagerTab = .summary
         case .managerTeam:
             selectedManagerTab = .team
         case .managerRisks:
@@ -337,6 +355,89 @@ final class AppModel: ObservableObject {
         {
             await handleURL(url)
         }
+    }
+
+    private func loadEmployeeDashboard(for user: AppUser) async throws -> EmployeeDashboardData {
+        async let profile = apiClient.fetchEmployeeProfile(employeeID: user.id)
+        async let disc = apiClient.fetchLatestDisc(employeeID: user.id)
+        async let motivation = apiClient.fetchLatestMotivation(employeeID: user.id)
+        async let pulse = apiClient.fetchLatestPulse()
+
+        let resolvedProfile = try await profile
+        let resolvedDisc = try await disc
+        let resolvedMotivation = try await motivation
+        let resolvedPulse = try await pulse
+
+        return EmployeeDashboardData(
+            profile: resolvedProfile,
+            disc: resolvedDisc,
+            motivation: resolvedMotivation,
+            latestPulse: resolvedPulse
+        )
+    }
+
+    private func loadManagerDashboard(for user: AppUser) async throws -> ManagerDashboardData {
+        let teamID = try await resolveManagerTeamID(from: user)
+
+        async let analytics = apiClient.fetchTeamAnalytics(teamID: teamID)
+        async let teamFallback = apiClient.fetchTeam(teamID: teamID)
+        async let risks = apiClient.fetchTeamRisks(teamID: teamID)
+        async let roleMap = apiClient.fetchTeamRoleMap(teamID: teamID)
+        async let pulseSummary = apiClient.fetchTeamPulseSummary(teamID: teamID)
+
+        let summary = try await analytics
+        let fallbackTeam = try await teamFallback
+        let mergedSummary = TeamDashboardResponse(
+            teamID: summary.teamID,
+            teamName: summary.teamName.isEmpty ? (fallbackTeam?.teamName ?? "Команда") : summary.teamName,
+            chemistryScore: summary.chemistryScore ?? fallbackTeam?.chemistryScore,
+            conflictRisk: summary.conflictRisk ?? fallbackTeam?.conflictRisk,
+            attritionRisk: summary.attritionRisk ?? fallbackTeam?.attritionRisk,
+            talentPoolScore: summary.talentPoolScore ?? fallbackTeam?.talentPoolScore,
+            successionScore: summary.successionScore ?? fallbackTeam?.successionScore
+        )
+
+        let employees = mergeEmployees(primary: try await roleMap, secondary: try await pulseSummary)
+
+        return ManagerDashboardData(
+            summary: mergedSummary,
+            risks: try await risks,
+            employees: employees
+        )
+    }
+
+    private func resolveManagerTeamID(from user: AppUser) async throws -> UUID {
+        if let teamID = user.teamID {
+            return teamID
+        }
+
+        let teams = try await apiClient.fetchTeams()
+        guard let teamID = teams.first?.teamID else {
+            throw APIClientError.invalidState("Для пользователя не найдена команда.")
+        }
+        return teamID
+    }
+
+    private func mergeEmployees(primary: [EmployeeSnapshot], secondary: [EmployeeSnapshot]) -> [EmployeeSnapshot] {
+        var storage = Dictionary(uniqueKeysWithValues: primary.map { ($0.id, $0) })
+
+        for employee in secondary {
+            if let current = storage[employee.id] {
+                storage[employee.id] = EmployeeSnapshot(
+                    id: current.id,
+                    fullName: current.fullName.isEmpty ? employee.fullName : current.fullName,
+                    roleTitle: current.roleTitle.isEmpty ? employee.roleTitle : current.roleTitle,
+                    chemistryFit: current.chemistryFit ?? employee.chemistryFit,
+                    burnoutRisk: current.burnoutRisk ?? employee.burnoutRisk,
+                    potential: current.potential ?? employee.potential,
+                    summary: current.summary ?? employee.summary
+                )
+            } else {
+                storage[employee.id] = employee
+            }
+        }
+
+        return storage.values.sorted { $0.fullName.localizedCaseInsensitiveCompare($1.fullName) == .orderedAscending }
     }
 
     private func submitWithRetry(
@@ -371,13 +472,38 @@ final class AppModel: ObservableObject {
 
     private func setSession(_ session: UserSession) {
         self.session = session
+        apiClient.authTokens = session.tokens
 
         if let data = try? JSONEncoder().encode(session.user) {
             defaults.set(data, forKey: sessionKey)
         }
 
-        keychainStore.save(session.tokens.accessToken, account: accessTokenKey)
-        keychainStore.save(session.tokens.refreshToken, account: refreshTokenKey)
+        persistTokens(session.tokens)
+    }
+
+    private func configureAPIClient(_ client: any APIClient & NetworkStateControlling) {
+        client.authTokens = session?.tokens
+        client.onTokenRefresh = { [weak self] tokens in
+            Task { @MainActor in
+                self?.persistTokens(tokens)
+            }
+        }
+    }
+
+    private func switchAPIClient(to client: any APIClient & NetworkStateControlling) {
+        apiClient = client
+        configureAPIClient(client)
+    }
+
+    private func persistTokens(_ tokens: SessionTokens) {
+        keychainStore.save(tokens.accessToken, account: accessTokenKey)
+        keychainStore.save(tokens.refreshToken, account: refreshTokenKey)
+
+        if let current = session {
+            session = UserSession(user: current.user, tokens: tokens)
+        }
+
+        apiClient.authTokens = tokens
     }
 
     private func presentAlert(_ message: String) {

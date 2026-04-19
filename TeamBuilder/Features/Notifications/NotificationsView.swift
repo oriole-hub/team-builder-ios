@@ -14,7 +14,7 @@ struct NotificationsView: View {
         List {
             ForEach(appModel.notifications) { notification in
                 Button {
-                    if let url = URL(string: notification.deepLink) {
+                    if let deepLink = notification.deepLink, let url = URL(string: deepLink) {
                         Task {
                             await appModel.handleURL(url)
                         }

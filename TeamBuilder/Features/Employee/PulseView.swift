@@ -10,12 +10,12 @@ import SwiftUI
 struct PulseView: View {
     @EnvironmentObject private var appModel: AppModel
 
-    @State private var mood = 72.0
-    @State private var stress = 58.0
-    @State private var workload = 67.0
-    @State private var recognition = 44.0
-    @State private var collaboration = 79.0
-    @State private var leaveIntent = 22.0
+    @State private var mood = 4.0
+    @State private var stress = 3.0
+    @State private var workload = 4.0
+    @State private var recognition = 2.0
+    @State private var collaboration = 4.0
+    @State private var leaveIntent = 2.0
 
     var body: some View {
         ScrollView {
@@ -44,7 +44,7 @@ struct PulseView: View {
                             )
                         }
                     }
-                    .buttonStyle(.borderedProminent)
+                    .appPrimaryButton()
                 }
                 .appCard()
             }
@@ -52,6 +52,16 @@ struct PulseView: View {
         }
         .background(AppTheme.background)
         .navigationTitle("Опрос Pulse")
+        .task(id: appModel.employeeDashboard?.latestPulse) {
+            if let pulse = appModel.employeeDashboard?.latestPulse {
+                mood = Double(pulse.mood)
+                stress = Double(pulse.stress)
+                workload = Double(pulse.workload)
+                recognition = Double(pulse.recognition)
+                collaboration = Double(pulse.collaboration)
+                leaveIntent = Double(pulse.leaveIntent)
+            }
+        }
     }
 
     private func pulseSlider(title: String, value: Binding<Double>) -> some View {
@@ -66,7 +76,7 @@ struct PulseView: View {
                     .foregroundStyle(AppTheme.textSecondary)
             }
 
-            Slider(value: value, in: 0...100, step: 1)
+            Slider(value: value, in: 1...5, step: 1)
                 .tint(AppTheme.secondaryAccent)
         }
     }

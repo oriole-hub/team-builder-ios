@@ -16,13 +16,19 @@ struct EmployeeDetailView: View {
                 EmployeeCardView(employee: employee)
 
                 VStack(alignment: .leading, spacing: AppTheme.spacing12) {
-                    Text("Рекомендация руководителю")
+                    Text("Профиль сотрудника")
                         .font(AppTheme.headerFont(17))
                         .foregroundStyle(AppTheme.textPrimary)
 
-                    Text(employee.topRecommendation)
-                        .font(AppTheme.bodyFont())
-                        .foregroundStyle(AppTheme.textSecondary)
+                    if let summary = employee.summary, !summary.isEmpty {
+                        Text(summary)
+                            .font(AppTheme.bodyFont())
+                            .foregroundStyle(AppTheme.textSecondary)
+                    } else {
+                        Text("Дополнительные детали по сотруднику в ответе бэкенда отсутствуют.")
+                            .font(AppTheme.bodyFont())
+                            .foregroundStyle(AppTheme.textSecondary)
+                    }
                 }
                 .appCard()
             }
@@ -45,7 +51,7 @@ struct EmployeeDetailView_Previews: PreviewProvider {
                     chemistryFit: 84,
                     burnoutRisk: 41,
                     potential: 79,
-                    topRecommendation: "Дайте больше признания и самостоятельности."
+                    summary: "Дайте больше признания и самостоятельности."
                 )
             )
         }

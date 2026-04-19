@@ -22,59 +22,74 @@ struct AssessmentsView: View {
 
     var body: some View {
         ScrollView {
-//            VStack(spacing: AppTheme.spacing16) {
-//                VStack(alignment: .leading, spacing: AppTheme.spacing12) {
-//                    Text("DISC")
-//                        .font(.headline)
-//                        .foregroundStyle(AppTheme.textPrimary)
-//
-//                    slider(title: "Доминирование", value: $dominance)
-//                    slider(title: "Влияние", value: $influence)
-//                    slider(title: "Стабильность", value: $steadiness)
-//                    slider(title: "Соответствие", value: $compliance)
-//
-//                    Button("Отправить DISC") {
-//                        Task {
-//                            await appModel.submitDisc(
-//                                dominance: dominance,
-//                                influence: influence,
-//                                steadiness: steadiness,
-//                                compliance: compliance
-//                            )
-//                        }
-//                    }
-//                    .buttonStyle(.borderedProminent)
-//                }
-//                .appCard()
-//
-//                VStack(alignment: .leading, spacing: AppTheme.spacing12) {
-//                    Text("Мотивация")
-//                        .font(.headline)
-//                        .foregroundStyle(AppTheme.textPrimary)
-//
-//                    slider(title: "Рост", value: $growth)
-//                    slider(title: "Автономия", value: $autonomy)
-//                    slider(title: "Стабильность", value: $stability)
-//                    slider(title: "Вознаграждение", value: $reward)
-//
-//                    Button("Отправить мотивацию") {
-//                        Task {
-//                            await appModel.submitMotivation(
-//                                growth: growth,
-//                                autonomy: autonomy,
-//                                stability: stability,
-//                                reward: reward
-//                            )
-//                        }
-//                    }
-//                    .buttonStyle(.borderedProminent)
-//                }
-//                .appCard()
-//            }
-//            .padding(AppTheme.spacing16)
+            VStack(spacing: AppTheme.spacing16) {
+                VStack(alignment: .leading, spacing: AppTheme.spacing12) {
+                    Text("DISC")
+                        .font(AppTheme.headerFont(17))
+                        .foregroundStyle(AppTheme.textPrimary)
+
+                    slider(title: "Доминирование", value: $dominance)
+                    slider(title: "Влияние", value: $influence)
+                    slider(title: "Стабильность", value: $steadiness)
+                    slider(title: "Соответствие", value: $compliance)
+
+                    Button("Отправить DISC") {
+                        Task {
+                            await appModel.submitDisc(
+                                dominance: dominance,
+                                influence: influence,
+                                steadiness: steadiness,
+                                compliance: compliance
+                            )
+                        }
+                    }
+                    .appPrimaryButton()
+                }
+                .appCard()
+
+                VStack(alignment: .leading, spacing: AppTheme.spacing12) {
+                    Text("Мотивация")
+                        .font(AppTheme.headerFont(17))
+                        .foregroundStyle(AppTheme.textPrimary)
+
+                    slider(title: "Рост", value: $growth)
+                    slider(title: "Автономия", value: $autonomy)
+                    slider(title: "Стабильность", value: $stability)
+                    slider(title: "Вознаграждение", value: $reward)
+
+                    Button("Отправить мотивацию") {
+                        Task {
+                            await appModel.submitMotivation(
+                                growth: growth,
+                                autonomy: autonomy,
+                                stability: stability,
+                                reward: reward
+                            )
+                        }
+                    }
+                    .appPrimaryButton()
+                }
+                .appCard()
+            }
+            .padding(AppTheme.spacing16)
         }
         .background(AppTheme.background)
         .navigationTitle("Опросы")
+        .task(id: appModel.employeeDashboard) {
+            if let disc = appModel.employeeDashboard?.disc {
+                dominance = Double(disc.dominance)
+                influence = Double(disc.influence)
+                steadiness = Double(disc.steadiness)
+                compliance = Double(disc.compliance)
+            }
+
+            if let motivation = appModel.employeeDashboard?.motivation {
+                growth = Double(motivation.growth)
+                autonomy = Double(motivation.autonomy)
+                stability = Double(motivation.stability)
+                reward = Double(motivation.reward)
+            }
+        }
     }
 
     private func slider(title: String, value: Binding<Double>) -> some View {

@@ -16,7 +16,6 @@ enum EmployeeTab: Hashable {
 }
 
 enum ManagerTab: Hashable {
-    case summary
     case team
     case risks
     case notifications
@@ -28,7 +27,6 @@ enum DeepLinkDestination: Hashable {
     case employeeAssessments
     case employeePulse
     case notifications
-    case managerSummary
     case managerTeam
     case managerRisks
     case employeeDetail(UUID)
@@ -51,7 +49,7 @@ struct DeepLink: Hashable {
         case "notifications":
             destination = .notifications
         case "summary":
-            destination = .managerSummary
+            destination = .managerTeam
         case "team":
             if
                 components.count == 2,

@@ -7,19 +7,22 @@
 
 import SwiftUI
 import UIKit
+import CoreText
 
 enum AppTheme {
     static let halvarFontName = "HalvarBreitt2-XBd"
     static let rooftopRegularFontName = "T2Rooftop-Regular"
     static let rooftopMediumFontName = "T2Rooftop-Medium"
 
-    static let background = dynamicColor(light: UIColor(red: 0.96, green: 0.97, blue: 0.99, alpha: 1.0),
-                                         dark: UIColor(red: 0.05, green: 0.05, blue: 0.07, alpha: 1.0))
+    static let background = dynamicColor(light: UIColor(red: 1, green: 1, blue: 1, alpha: 1.0),
+                                         dark: UIColor(red: 0, green: 0, blue: 0, alpha: 1.0))
     static let surface = dynamicColor(light: UIColor(red: 1.0, green: 1.0, blue: 1.0, alpha: 1.0),
                                       dark: UIColor(red: 0.11, green: 0.11, blue: 0.12, alpha: 1.0))
     static let elevatedSurface = dynamicColor(light: UIColor(red: 0.92, green: 0.93, blue: 0.96, alpha: 1.0),
                                               dark: UIColor(red: 0.16, green: 0.16, blue: 0.18, alpha: 1.0))
     static let accent = Color(red: 1.0, green: 0.2039, blue: 0.5843)
+    static let primaryButtonBackground = Color(red: 167.0 / 255.0, green: 252.0 / 255.0, blue: 0.0)
+
     static let secondaryAccent = dynamicColor(light: UIColor(red: 0.19, green: 0.58, blue: 0.96, alpha: 1.0),
                                               dark: UIColor(red: 0.53, green: 0.84, blue: 0.99, alpha: 1.0))
     static let textPrimary = dynamicColor(light: UIColor(red: 0.10, green: 0.10, blue: 0.12, alpha: 1.0),
@@ -44,7 +47,7 @@ enum AppTheme {
     static let radius12: CGFloat = 12
 
     static func headerFont(_ size: CGFloat) -> Font {
-        .custom(halvarFontName, size: size, relativeTo: size >= 24 ? .title : .headline)
+        Font(headerUIFont(size) as CTFont)
     }
 
     static func bodyFont(_ size: CGFloat = 16) -> Font {
@@ -61,11 +64,11 @@ enum AppTheme {
         appearance.backgroundColor = UIColor.clear
         appearance.titleTextAttributes = [
             .foregroundColor: UIColor(textPrimary),
-            .font: UIFont(name: halvarFontName, size: 17) ?? UIFont.systemFont(ofSize: 17, weight: .bold)
+            .font: headerUIFont(17)
         ]
         appearance.largeTitleTextAttributes = [
             .foregroundColor: UIColor(textPrimary),
-            .font: UIFont(name: halvarFontName, size: 34) ?? UIFont.systemFont(ofSize: 34, weight: .bold)
+            .font: headerUIFont(34)
         ]
 
         let navigationBar = UINavigationBar.appearance()
@@ -80,6 +83,21 @@ enum AppTheme {
         Color(uiColor: UIColor { traitCollection in
             traitCollection.userInterfaceStyle == .dark ? dark : light
         })
+    }
+
+    private static func headerUIFont(_ size: CGFloat) -> UIFont {
+        scaledUIFont(named: halvarFontName,
+                     size: size,
+                     textStyle: size >= 34 ? .largeTitle : (size >= 24 ? .title1 : .headline),
+                     fallbackWeight: .bold)
+    }
+
+    private static func scaledUIFont(named fontName: String,
+                                     size: CGFloat,
+                                     textStyle: UIFont.TextStyle,
+                                     fallbackWeight: UIFont.Weight) -> UIFont {
+        let baseFont = UIFont(name: fontName, size: size) ?? UIFont.systemFont(ofSize: size, weight: fallbackWeight)
+        return UIFontMetrics(forTextStyle: textStyle).scaledFont(for: baseFont)
     }
 }
 
@@ -96,8 +114,43 @@ struct AppCardModifier: ViewModifier {
     }
 }
 
+struct AppInputFieldModifier: ViewModifier {
+    let isFocused: Bool
+
+    func body(content: Content) -> some View {
+        content
+            .padding(.horizontal, AppTheme.spacing16)
+            .padding(.vertical, 14)
+            .background(AppTheme.elevatedSurface, in: RoundedRectangle(cornerRadius: AppTheme.radius12))
+            .overlay {
+                RoundedRectangle(cornerRadius: AppTheme.radius12)
+                    .stroke(isFocused ? AppTheme.accent : AppTheme.border, lineWidth: isFocused ? 2 : 1)
+            }
+            .shadow(color: Color.black.opacity(isFocused ? 0.10 : 0.04), radius: isFocused ? 10 : 4, y: 2)
+            .foregroundStyle(AppTheme.textPrimary)
+            .tint(AppTheme.accent)
+    }
+}
+
+struct AppPrimaryButtonModifier: ViewModifier {
+    func body(content: Content) -> some View {
+        content
+            .buttonStyle(.borderedProminent)
+            .tint(AppTheme.primaryButtonBackground)
+            .foregroundStyle(.white)
+    }
+}
+
 extension View {
     func appCard() -> some View {
         modifier(AppCardModifier())
+    }
+
+    func appInputField(isFocused: Bool) -> some View {
+        modifier(AppInputFieldModifier(isFocused: isFocused))
+    }
+
+    func appPrimaryButton() -> some View {
+        modifier(AppPrimaryButtonModifier())
     }
 }

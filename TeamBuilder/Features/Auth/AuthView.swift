@@ -8,46 +8,60 @@
 import SwiftUI
 
 struct AuthView: View {
+    private enum Field: Hashable {
+        case email
+        case password
+    }
+
     @EnvironmentObject private var appModel: AppModel
 
     @State private var email = "employee@demo.team"
     @State private var password = "demo123"
     @State private var inviteCode = "invite-employee"
     @State private var fullName = "Алина Петрова"
+    @FocusState private var focusedField: Field?
 
     var body: some View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: AppTheme.spacing24) {
-                    VStack(alignment: .leading, spacing: AppTheme.spacing12) {
-                        Text("Вход")
-                            .font(AppTheme.headerFont(17))
-                            .foregroundStyle(AppTheme.textPrimary)
+                    VStack(alignment: .leading, spacing: AppTheme.spacing24) {
+                        VStack(alignment: .leading, spacing: AppTheme.spacing8) {
+                            Text("Почта")
+                                .font(AppTheme.bodyMediumFont(14))
+                                .foregroundStyle(AppTheme.textSecondary)
 
-                        TextField("Почта", text: $email)
-                            .font(AppTheme.bodyFont())
-                            .textInputAutocapitalization(.never)
-                            .keyboardType(.emailAddress)
-                            .padding()
-                            .background(AppTheme.surface, in: RoundedRectangle(cornerRadius: AppTheme.radius12))
-                            .foregroundStyle(AppTheme.textPrimary)
+                            TextField("employee@demo.team", text: $email)
+                                .font(AppTheme.bodyFont())
+                                .textInputAutocapitalization(.never)
+                                .keyboardType(.emailAddress)
+                                .focused($focusedField, equals: .email)
+                                .appInputField(isFocused: focusedField == .email)
+                        }
 
-                        SecureField("Пароль", text: $password)
-                            .font(AppTheme.bodyFont())
-                            .padding()
-                            .background(AppTheme.surface, in: RoundedRectangle(cornerRadius: AppTheme.radius12))
-                            .foregroundStyle(AppTheme.textPrimary)
+                        VStack(alignment: .leading, spacing: AppTheme.spacing8) {
+                            Text("Пароль")
+                                .font(AppTheme.bodyMediumFont(14))
+                                .foregroundStyle(AppTheme.textSecondary)
+
+                            SecureField("Введите пароль", text: $password)
+                                .font(AppTheme.bodyFont())
+                                .focused($focusedField, equals: .password)
+                                .appInputField(isFocused: focusedField == .password)
+                        }
 
                         
                         Button("Демо сотрудника") {
-                            email = "employee@demo.team"
-                            password = "demo123"
+                            Task {
+                                await appModel.runDemoFlow(for: .employee)
+                            }
                         }
-                        .buttonStyle(.borderedProminent)
+                        .appPrimaryButton()
                         
                         Button("Демо руководителя") {
-                            email = "manager@demo.team"
-                            password = "demo123"
+                            Task {
+                                await appModel.runDemoFlow(for: .manager)
+                            }
                         }
                         .buttonStyle(.bordered)
 
@@ -61,10 +75,11 @@ struct AuthView: View {
                                 Spacer()
                                 if appModel.isLoading {
                                     ProgressView()
+                                        .tint(.white)
                                 }
                             }
                         }
-                        .buttonStyle(.borderedProminent)
+                        .appPrimaryButton()
                     }
                     .appCard()
 
@@ -89,7 +104,7 @@ struct AuthView: View {
 //                                await appModel.acceptInvitation(code: inviteCode, fullName: fullName)
 //                            }
 //                        }
-//                        .buttonStyle(.borderedProminent)
+//                        .appPrimaryButton()
 //                    }
 //                    .appCard()
                 }

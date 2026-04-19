@@ -66,7 +66,7 @@ struct ProfileEditView: View {
                     }
                 }
             }
-            .buttonStyle(.borderedProminent)
+            .appPrimaryButton()
 
             Text("Стаж: \(profile.tenure) • Формат работы: \(profile.workMode)")
                 .font(AppTheme.bodyFont())

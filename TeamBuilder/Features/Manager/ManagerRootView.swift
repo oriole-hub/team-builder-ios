@@ -13,14 +13,6 @@ struct ManagerRootView: View {
     var body: some View {
         TabView(selection: $appModel.selectedManagerTab) {
             NavigationStack {
-                ManagerSummaryView()
-            }
-            .tabItem {
-                Label("Сводка", systemImage: "rectangle.grid.2x2.fill")
-            }
-            .tag(ManagerTab.summary)
-
-            NavigationStack {
                 ManagerTeamView()
             }
             .tabItem {

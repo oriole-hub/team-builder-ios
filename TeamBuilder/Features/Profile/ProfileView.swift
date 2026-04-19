@@ -18,11 +18,11 @@ struct ProfileView: View {
                     if session.user.role == .employee, let dashboard = appModel.employeeDashboard {
                         employeeProfile(profile: dashboard.profile)
                     }
-                    deepLinkExamples
                     Button("Выйти", role: .destructive) {
                         appModel.signOut()
                     }
                     .buttonStyle(.bordered)
+                    .appPrimaryButton()
                 }
             }
             .padding(AppTheme.spacing16)
@@ -66,37 +66,6 @@ struct ProfileView: View {
                 }
             }
             .buttonStyle(.plain)
-        }
-        .appCard()
-    }
-
-
-    private var deepLinkExamples: some View {
-        VStack(alignment: .leading, spacing: AppTheme.spacing12) {
-            Text("Deeplink-ссылки")
-                .font(AppTheme.headerFont(17))
-                .foregroundStyle(AppTheme.textPrimary)
-
-            Button("Открыть уведомления") {
-                Task {
-                    await appModel.handleURL(URL(string: "teambuilder://notifications")!)
-                }
-            }
-            .buttonStyle(.bordered)
-
-            Button("Открыть опрос pulse") {
-                Task {
-                    await appModel.handleURL(URL(string: "teambuilder://pulse")!)
-                }
-            }
-            .buttonStyle(.bordered)
-
-            Button("Открыть риски команды") {
-                Task {
-                    await appModel.handleURL(URL(string: "teambuilder://risks")!)
-                }
-            }
-            .buttonStyle(.bordered)
         }
         .appCard()
     }
